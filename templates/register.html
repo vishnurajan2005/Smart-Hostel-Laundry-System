@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Register · Smart Hostel Laundry{% endblock %}
+{% block content %}
+<section class="auth-card card">
+  <div class="brand-mark">SL</div>
+  <h1>Create student account</h1>
+  <p class="muted">Book washing machines without queueing at the laundry room.</p>
+  <form id="register-form" novalidate>
+    <label>Full name<input id="name" type="text" minlength="2" required></label>
+    <label>Email<input id="email" type="email" required></label>
+    <label>Password<input id="password" type="password" minlength="8" required></label>
+    <button class="btn btn-primary full" id="register-button" data-testid="register-button" type="submit">Create account</button>
+  </form>
+  <p class="auth-link">Already registered? <a href="{{ url_for('login_page') }}">Sign in</a></p>
+</section>
+{% endblock %}
+{% block scripts %}<script>
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {name: document.getElementById('name').value.trim(), email: document.getElementById('email').value.trim(), password: document.getElementById('password').value};
+  if (payload.name.length < 2 || !payload.email || payload.password.length < 8) return showToast('Complete all fields correctly.', 'error');
+  const result = await api('/api/register', {method:'POST', body:JSON.stringify(payload)});
+  if (result.success) { showToast('Registration successful. Please sign in.'); setTimeout(() => location.href='/login', 700); }
+});
+</script>{% endblock %}

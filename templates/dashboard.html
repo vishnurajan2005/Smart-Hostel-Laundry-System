@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard · Smart Hostel Laundry{% endblock %}
+{% block content %}
+<div class="page-header"><div><p class="eyebrow">STUDENT PORTAL</p><h1>Good to see you, {{ current_user.name }}</h1><p class="muted">Today is {{ today }}. Keep your laundry plans simple.</p></div><a class="btn btn-primary" href="{{ url_for('booking_page') }}">Book Laundry Slot</a></div>
+<div class="stats-grid">
+  <div class="stat-card"><span>Available machines</span><strong id="available-machines">—</strong></div>
+  <div class="stat-card"><span>Active bookings</span><strong id="active-bookings">—</strong></div>
+  <div class="stat-card"><span>Today</span><strong>{{ today }}</strong></div>
+</div>
+<section class="card"><div class="section-heading"><h2>Available machines</h2><span class="muted">Active machines can be booked</span></div><div id="machine-list" class="machine-grid"></div></section>
+<section class="card"><div class="section-heading"><h2>My bookings</h2><a href="{{ url_for('booking_page') }}">New booking</a></div><div id="booking-list" data-testid="booking-list" class="booking-list"></div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/student.js') }}"></script>{% endblock %}

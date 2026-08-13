@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Book Laundry Slot · Smart Hostel Laundry{% endblock %}
+{% block content %}
+<div class="page-header"><div><p class="eyebrow">NEW BOOKING</p><h1>Book a washing machine</h1><p class="muted">Choose a date, machine and available time slot.</p></div></div>
+<section class="booking-layout">
+  <form id="booking-form" class="card" novalidate>
+    <label>Date<input id="date-input" data-testid="date-input" type="date" min="{{ today }}" required></label>
+    <label>Washing machine<select id="machine-select" data-testid="machine-select" required></select></label>
+    <label>Time slot<select id="slot-select" data-testid="slot-select" required></select></label>
+    <div id="availability-note" class="info-box">Select a date and machine to see availability.</div>
+    <button class="btn btn-primary full" id="book-button" data-testid="book-button" type="submit">Confirm booking</button>
+  </form>
+  <aside class="card summary-card"><h2>Booking summary</h2><div id="summary"><p class="muted">Your selection will appear here.</p></div><div class="rule-box"><strong>Booking rules</strong><ul><li>Maximum 2 bookings per day.</li><li>No past dates.</li><li>One machine per slot.</li><li>Cancellation is allowed before the slot starts.</li></ul></div></aside>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/booking.js') }}"></script>{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Smart Hostel Laundry{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% if current_user %}
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">Smart Hostel Laundry</a>
+    <div class="top-actions">
+      <span class="user-chip">{{ current_user.name }} · {{ current_user.role|capitalize }}</span>
+      <button class="btn btn-outline" id="logout-button" data-testid="logout-button" onclick="logout()">Logout</button>
+    </div>
+  </header>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav>
+        {% if current_user.role == 'student' %}
+          <a href="{{ url_for('dashboard_page') }}">Dashboard</a>
+          <a href="{{ url_for('booking_page') }}">Book Slot</a>
+        {% else %}
+          <a href="{{ url_for('admin_page') }}">Admin Dashboard</a>
+        {% endif %}
+      </nav>
+    </aside>
+  {% endif %}
+  <main class="main-content {% if not current_user %}auth-main{% endif %}">
+    {% block content %}{% endblock %}
+  </main>
+  {% if current_user %}</div>{% endif %}
+  <div id="toast-container" class="toast-container"></div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Login · Smart Hostel Laundry{% endblock %}
+{% block content %}
+<section class="auth-card card">
+  <div class="brand-mark">SL</div>
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to manage your hostel laundry slots.</p>
+  <form id="login-form" novalidate>
+    <label>Email<input id="login-email" data-testid="login-email" type="email" required autocomplete="email"></label>
+    <label>Password<input id="login-password" data-testid="login-password" type="password" required autocomplete="current-password"></label>
+    <button class="btn btn-primary full" id="login-button" data-testid="login-button" type="submit">Sign in</button>
+  </form>
+  <p class="auth-link">New student? <a href="{{ url_for('register_page') }}">Create an account</a></p>
+  <div class="demo-box"><strong>Demo accounts</strong><br>Student: student@example.com / Student@123<br>Admin: admin@example.com / Admin@123</div>
+</section>
+{% endblock %}
+{% block scripts %}<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showToast('Enter email and password.', 'error');
+  const result = await api('/api/login', {method:'POST', body:JSON.stringify({email,password})});
+  if (result.success) window.location.href = result.user.role === 'admin' ? '/admin' : '/dashboard';
+});
+</script>{% endblock %}
