@@ -164,4 +164,6 @@ async function cancelBooking(id) {
 }
 
 
-await loadStudentData();
+document.addEventListener('DOMContentLoaded', async function () {
+    await loadStudentData();
+});

@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from config import Config
 from models import db, User, Machine, Booking
 from services.booking_service import SLOTS, parse_date, create_booking, slot_start_datetime
+from datetime import datetime
 
 BASE_DIR = Path(__file__).resolve().parent
 app = Flask(__name__)
@@ -238,14 +239,59 @@ def api_cancel_booking(booking_id):
 def api_admin_bookings():
     search = request.args.get('search', '').strip()
     status = request.args.get('status', '').strip()
+    booking_date = request.args.get('date', '').strip()
+
     query = Booking.query.join(User).join(Machine)
+
+    # Existing search filter
     if search:
         term = f'%{search}%'
-        query = query.filter(or_(User.name.ilike(term), User.email.ilike(term), Machine.name.ilike(term), Booking.slot.ilike(term)))
+
+        query = query.filter(
+            or_(
+                User.name.ilike(term),
+                User.email.ilike(term),
+                Machine.name.ilike(term),
+                Booking.slot.ilike(term)
+            )
+        )
+
+    # Existing status filter
     if status in {'confirmed', 'cancelled'}:
-        query = query.filter(Booking.status == status)
-    bookings = query.order_by(Booking.booking_date.desc(), Booking.id.desc()).all()
-    return jsonify({'success': True, 'bookings': [serialize_booking(b) for b in bookings]})
+        query = query.filter(
+            Booking.status == status
+        )
+
+    # New date filter
+    if booking_date:
+        try:
+            selected_date = datetime.strptime(
+                booking_date,
+                '%Y-%m-%d'
+            ).date()
+
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid date format. Use YYYY-MM-DD.'
+            }), 400
+
+        query = query.filter(
+            Booking.booking_date == selected_date
+        )
+
+    bookings = query.order_by(
+        Booking.booking_date.desc(),
+        Booking.id.desc()
+    ).all()
+
+    return jsonify({
+        'success': True,
+        'bookings': [
+            serialize_booking(b)
+            for b in bookings
+        ]
+    })
 
 
 @app.post('/api/admin/machines')

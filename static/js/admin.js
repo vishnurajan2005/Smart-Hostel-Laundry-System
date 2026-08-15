@@ -29,87 +29,121 @@ document.addEventListener('DOMContentLoaded', function () {
     /* Add machine */
 
     if (addButton) {
+
         addButton.addEventListener('click', function () {
+
             openMachineModal();
+
         });
+
     }
 
 
     /* Close button */
 
     if (closeButton) {
+
         closeButton.addEventListener('click', function () {
+
             closeMachineModal();
+
         });
+
     }
 
 
     /* Cancel button */
 
     if (cancelButton) {
+
         cancelButton.addEventListener('click', function () {
+
             closeMachineModal();
+
         });
+
     }
 
 
     /* Machine form */
 
     if (machineForm) {
+
         machineForm.addEventListener('submit', function (event) {
+
             saveMachine(event);
+
         });
+
     }
 
 
     /* Booking filter */
 
     if (filterButton) {
+
         filterButton.addEventListener('click', function () {
+
             loadAdminBookings();
+
         });
+
     }
 
 
-    /* Native dialog: Escape key */
+    /* Escape key */
 
     if (machineModal) {
+
         machineModal.addEventListener('cancel', function (event) {
+
             event.preventDefault();
+
             closeMachineModal();
+
         });
+
     }
 
 
-    /* Click dialog backdrop */
+    /* Backdrop */
 
     if (machineModal) {
+
         machineModal.addEventListener('click', function (event) {
 
             if (event.target === machineModal) {
+
                 closeMachineModal();
+
             }
 
         });
+
     }
 
 
     /* Load admin dashboard */
 
     loadAdmin();
+
 });
 
 
 /* =========================================================
-   LOAD ADMIN DASHBOARD
+   LOAD ADMIN
    ========================================================= */
 
 async function loadAdmin() {
 
     await Promise.all([
+
         loadAdminMachines(),
+
         loadAdminBookings()
+
     ]);
+
 }
 
 
@@ -123,8 +157,12 @@ async function loadAdminMachines() {
         await api('/api/machines');
 
 
-    if (!result?.success) {
+    if (!result || !result.success) {
+
+        console.error('Failed to load machines:', result);
+
         return;
+
     }
 
 
@@ -132,119 +170,8 @@ async function loadAdminMachines() {
         result.machines || [];
 
 
-    /* Count active machines */
-
-    const activeMachines =
-        adminMachines.filter(function (machine) {
-
-            return machine.status === 'active';
-
-        }).length;
-
-
-    /* Load bookings for statistics */
-
-    const bookingsResult =
-        await api('/api/admin/bookings');
-
-
-    const bookings =
-        bookingsResult?.success
-            ? bookingsResult.bookings || []
-            : [];
-
-
-    /* Today's date */
-
-    const today =
-        new Date().toISOString().slice(0, 10);
-
-
-    /* Today's bookings */
-
-    const todaysBookings =
-        bookings.filter(function (booking) {
-
-            return booking.booking_date === today;
-
-        }).length;
-
-
-    /* Active bookings */
-
-    const activeBookings =
-        bookings.filter(function (booking) {
-
-            return booking.status === 'confirmed';
-
-        }).length;
-
-
-    /* Cancelled bookings */
-
-    const cancelledBookings =
-        bookings.filter(function (booking) {
-
-            return booking.status === 'cancelled';
-
-        }).length;
-
-
-    /* Render dashboard statistics */
-
-    const dashboard =
-        document.getElementById('admin-dashboard');
-
-
-    if (dashboard) {
-
-        dashboard.innerHTML =
-
-            '<div class="stat-card">' +
-                '<span>Total machines</span>' +
-                '<strong>' +
-                    adminMachines.length +
-                '</strong>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-                '<span>Active machines</span>' +
-                '<strong>' +
-                    activeMachines +
-                '</strong>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-                '<span>Inactive machines</span>' +
-                '<strong>' +
-                    (adminMachines.length - activeMachines) +
-                '</strong>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-                '<span>Today\'s bookings</span>' +
-                '<strong>' +
-                    todaysBookings +
-                '</strong>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-                '<span>Active bookings</span>' +
-                '<strong>' +
-                    activeBookings +
-                '</strong>' +
-            '</div>' +
-
-            '<div class="stat-card">' +
-                '<span>Cancelled bookings</span>' +
-                '<strong>' +
-                    cancelledBookings +
-                '</strong>' +
-            '</div>';
-    }
-
-
     renderMachines();
+
 }
 
 
@@ -259,7 +186,9 @@ function renderMachines() {
 
 
     if (!container) {
+
         return;
+
     }
 
 
@@ -268,33 +197,39 @@ function renderMachines() {
     if (adminMachines.length === 0) {
 
         container.innerHTML =
+
             '<div class="empty-state">' +
+
                 '<p>No machines configured.</p>' +
-                '<button ' +
-                    'type="button" ' +
+
+                '<button type="button" ' +
                     'class="btn btn-primary" ' +
                     'id="empty-add-machine">' +
                     'Add your first machine' +
                 '</button>' +
+
             '</div>';
 
 
-        const emptyAddButton =
+        const emptyButton =
             document.getElementById('empty-add-machine');
 
 
-        if (emptyAddButton) {
+        if (emptyButton) {
 
-            emptyAddButton.addEventListener(
+            emptyButton.addEventListener(
                 'click',
                 function () {
+
                     openMachineModal();
+
                 }
             );
 
         }
 
         return;
+
     }
 
 
@@ -304,11 +239,11 @@ function renderMachines() {
     adminMachines.forEach(function (machine) {
 
         const name =
-            escapeHtml(machine.name);
+            escapeHtml(machine.name || '');
 
 
         const status =
-            escapeHtml(machine.status);
+            escapeHtml(machine.status || '');
 
 
         const toggleText =
@@ -339,24 +274,17 @@ function renderMachines() {
 
                 '<td class="machine-actions">' +
 
-                    /* Enable / Disable */
-
-                    '<button ' +
-                        'type="button" ' +
+                    '<button type="button" ' +
                         'class="btn btn-outline machine-toggle" ' +
                         'data-id="' +
                             machine.id +
-                        '" ' +
-                        'data-testid="machine-status-toggle">' +
+                        '">' +
 
                         toggleText +
 
                     '</button>' +
 
-                    /* Edit */
-
-                    '<button ' +
-                        'type="button" ' +
+                    '<button type="button" ' +
                         'class="btn btn-outline machine-edit" ' +
                         'data-id="' +
                             machine.id +
@@ -366,10 +294,7 @@ function renderMachines() {
 
                     '</button>' +
 
-                    /* Delete */
-
-                    '<button ' +
-                        'type="button" ' +
+                    '<button type="button" ' +
                         'class="btn btn-danger machine-delete" ' +
                         'data-id="' +
                             machine.id +
@@ -382,6 +307,7 @@ function renderMachines() {
                 '</td>' +
 
             '</tr>';
+
     });
 
 
@@ -392,21 +318,27 @@ function renderMachines() {
             '<thead>' +
 
                 '<tr>' +
+
                     '<th>Machine</th>' +
+
                     '<th>Status</th>' +
+
                     '<th>Actions</th>' +
+
                 '</tr>' +
 
             '</thead>' +
 
             '<tbody>' +
+
                 rows +
+
             '</tbody>' +
 
         '</table>';
 
 
-    /* Toggle buttons */
+    /* Toggle */
 
     container
         .querySelectorAll('.machine-toggle')
@@ -427,7 +359,7 @@ function renderMachines() {
         });
 
 
-    /* Edit buttons */
+    /* Edit */
 
     container
         .querySelectorAll('.machine-edit')
@@ -448,7 +380,7 @@ function renderMachines() {
         });
 
 
-    /* Delete buttons */
+    /* Delete */
 
     container
         .querySelectorAll('.machine-delete')
@@ -467,11 +399,12 @@ function renderMachines() {
             );
 
         });
+
 }
 
 
 /* =========================================================
-   OPEN ADD / EDIT MACHINE DIALOG
+   OPEN MACHINE MODAL
    ========================================================= */
 
 function openMachineModal(machine) {
@@ -479,75 +412,57 @@ function openMachineModal(machine) {
     const modal =
         document.getElementById('machine-modal');
 
-
     const title =
         document.getElementById('machine-modal-title');
-
 
     const idInput =
         document.getElementById('machine-id');
 
-
     const nameInput =
         document.getElementById('machine-name');
-
 
     const statusInput =
         document.getElementById('machine-status');
 
 
-    if (!modal) {
-        return;
-    }
-
-
-    if (!title || !idInput || !nameInput || !statusInput) {
+    if (!modal || !title || !idInput ||
+        !nameInput || !statusInput) {
 
         console.error(
-            'Machine modal elements are missing from admin.html.'
+            'Machine modal elements are missing.'
         );
 
         return;
+
     }
 
-
-    /* EDIT MODE */
 
     if (machine) {
 
         title.textContent =
             'Edit machine';
 
-
         idInput.value =
             machine.id;
 
-
         nameInput.value =
             machine.name;
-
 
         statusInput.value =
             machine.status;
 
     }
 
-
-    /* ADD MODE */
-
     else {
 
         title.textContent =
             'Add machine';
 
-
         idInput.value =
             '';
 
-
         nameInput.value =
             '';
-
 
         statusInput.value =
             'active';
@@ -555,38 +470,30 @@ function openMachineModal(machine) {
     }
 
 
-    /* Native HTML dialog */
-
     if (typeof modal.showModal === 'function') {
 
-        if (!modal.open) {
-            modal.showModal();
-        }
+        modal.showModal();
 
     }
 
     else {
 
-        modal.setAttribute(
-            'open',
-            ''
-        );
+        modal.setAttribute('open', '');
 
     }
 
-
-    /* Focus machine name */
 
     setTimeout(function () {
 
         nameInput.focus();
 
     }, 100);
+
 }
 
 
 /* =========================================================
-   CLOSE MACHINE DIALOG
+   CLOSE MACHINE MODAL
    ========================================================= */
 
 function closeMachineModal() {
@@ -594,26 +501,26 @@ function closeMachineModal() {
     const modal =
         document.getElementById('machine-modal');
 
-
     const form =
         document.getElementById('machine-form');
-
 
     const idInput =
         document.getElementById('machine-id');
 
 
     if (!modal) {
+
         return;
+
     }
 
-
-    /* Close native dialog */
 
     if (typeof modal.close === 'function') {
 
         if (modal.open) {
+
             modal.close();
+
         }
 
     }
@@ -625,18 +532,19 @@ function closeMachineModal() {
     }
 
 
-    /* Reset form */
-
     if (form) {
+
         form.reset();
+
     }
 
-
-    /* Clear hidden machine ID */
 
     if (idInput) {
+
         idInput.value = '';
+
     }
+
 }
 
 
@@ -652,10 +560,8 @@ async function saveMachine(event) {
     const idInput =
         document.getElementById('machine-id');
 
-
     const nameInput =
         document.getElementById('machine-name');
-
 
     const statusInput =
         document.getElementById('machine-status');
@@ -669,22 +575,19 @@ async function saveMachine(event) {
         );
 
         return;
+
     }
 
 
     const id =
         idInput.value.trim();
 
-
     const name =
         nameInput.value.trim();
-
 
     const status =
         statusInput.value;
 
-
-    /* Client-side validation */
 
     if (name.length < 2) {
 
@@ -696,6 +599,7 @@ async function saveMachine(event) {
         nameInput.focus();
 
         return;
+
     }
 
 
@@ -709,6 +613,7 @@ async function saveMachine(event) {
         nameInput.focus();
 
         return;
+
     }
 
 
@@ -723,19 +628,21 @@ async function saveMachine(event) {
         );
 
         return;
+
     }
 
 
     const payload = {
+
         name: name,
+
         status: status
+
     };
 
 
     let result;
 
-
-    /* EDIT MACHINE */
 
     if (id) {
 
@@ -756,9 +663,6 @@ async function saveMachine(event) {
             );
 
     }
-
-
-    /* ADD MACHINE */
 
     else {
 
@@ -781,21 +685,22 @@ async function saveMachine(event) {
     }
 
 
-    /* API failure */
+    if (!result || !result.success) {
 
-    if (!result?.success) {
+        console.error(
+            'Machine API failed:',
+            result
+        );
+
         return;
+
     }
 
 
-    /* Close dialog */
-
     closeMachineModal();
 
-
-    /* Refresh machine list and statistics */
-
     await loadAdmin();
+
 }
 
 
@@ -821,15 +726,17 @@ function editMachine(id) {
         );
 
         return;
+
     }
 
 
     openMachineModal(machine);
+
 }
 
 
 /* =========================================================
-   ENABLE / DISABLE MACHINE
+   TOGGLE MACHINE
    ========================================================= */
 
 async function toggleMachine(id) {
@@ -844,12 +751,8 @@ async function toggleMachine(id) {
 
     if (!machine) {
 
-        showToast(
-            'Machine not found.',
-            'error'
-        );
-
         return;
+
     }
 
 
@@ -880,11 +783,12 @@ async function toggleMachine(id) {
         );
 
 
-    if (result?.success) {
+    if (result && result.success) {
 
         await loadAdmin();
 
     }
+
 }
 
 
@@ -904,12 +808,8 @@ async function deleteMachine(id) {
 
     if (!machine) {
 
-        showToast(
-            'Machine not found.',
-            'error'
-        );
-
         return;
+
     }
 
 
@@ -922,7 +822,9 @@ async function deleteMachine(id) {
 
 
     if (!confirmed) {
+
         return;
+
     }
 
 
@@ -935,11 +837,12 @@ async function deleteMachine(id) {
         );
 
 
-    if (result?.success) {
+    if (result && result.success) {
 
         await loadAdmin();
 
     }
+
 }
 
 
@@ -952,26 +855,33 @@ async function loadAdminBookings() {
     const searchInput =
         document.getElementById('booking-search');
 
-
     const statusInput =
         document.getElementById('booking-status');
 
+    const dateInput =
+        document.getElementById('booking-date');
 
-    if (!searchInput || !statusInput) {
-        return;
-    }
+
+    const search =
+        searchInput
+            ? searchInput.value.trim()
+            : '';
+
+
+    const status =
+        statusInput
+            ? statusInput.value
+            : '';
+
+
+    const bookingDate =
+        dateInput
+            ? dateInput.value
+            : '';
 
 
     const params =
         new URLSearchParams();
-
-
-    const search =
-        searchInput.value.trim();
-
-
-    const status =
-        statusInput.value;
 
 
     if (search) {
@@ -994,13 +904,23 @@ async function loadAdminBookings() {
     }
 
 
-    const query =
+    if (bookingDate) {
+
+        params.set(
+            'date',
+            bookingDate
+        );
+
+    }
+
+
+    const queryString =
         params.toString();
 
 
     const url =
-        query
-            ? '/api/admin/bookings?' + query
+        queryString
+            ? '/api/admin/bookings?' + queryString
             : '/api/admin/bookings';
 
 
@@ -1008,39 +928,54 @@ async function loadAdminBookings() {
         await api(url);
 
 
-    if (!result?.success) {
+    if (!result || !result.success) {
+
+        console.error(
+            'Failed to load bookings:',
+            result
+        );
+
         return;
+
     }
 
 
-    const bookings =
-        result.bookings || [];
+    renderAdminBookings(
+        result.bookings || []
+    );
 
+}
+
+
+/* =========================================================
+   RENDER ADMIN BOOKINGS
+   ========================================================= */
+
+function renderAdminBookings(bookings) {
 
     const container =
         document.getElementById('admin-bookings');
 
 
     if (!container) {
+
         return;
+
     }
 
 
-    /* Empty state */
-
-    if (bookings.length === 0) {
+    if (!bookings || bookings.length === 0) {
 
         container.innerHTML =
 
             '<div class="empty-state">' +
 
-                '<p>' +
-                    'No bookings match your filters.' +
-                '</p>' +
+                '<p>No bookings match your filters.</p>' +
 
             '</div>';
 
         return;
+
     }
 
 
@@ -1097,13 +1032,11 @@ async function loadAdminBookings() {
 
                 '</td>' +
 
-
                 '<td>' +
 
                     machineName +
 
                 '</td>' +
-
 
                 '<td>' +
 
@@ -1113,18 +1046,18 @@ async function loadAdminBookings() {
 
                 '</td>' +
 
-
                 '<td>' +
 
                     slot +
 
                 '</td>' +
 
-
                 '<td>' +
 
                     '<span class="status status-' +
+
                         status +
+
                     '">' +
 
                         status +
@@ -1134,6 +1067,7 @@ async function loadAdminBookings() {
                 '</td>' +
 
             '</tr>';
+
     });
 
 
@@ -1146,9 +1080,13 @@ async function loadAdminBookings() {
                 '<tr>' +
 
                     '<th>Student</th>' +
+
                     '<th>Machine</th>' +
+
                     '<th>Date</th>' +
+
                     '<th>Slot</th>' +
+
                     '<th>Status</th>' +
 
                 '</tr>' +
@@ -1162,4 +1100,5 @@ async function loadAdminBookings() {
             '</tbody>' +
 
         '</table>';
+
 }

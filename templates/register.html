@@ -1,25 +1,383 @@
 {% extends 'base.html' %}
-{% block title %}Register · Smart Hostel Laundry{% endblock %}
-{% block content %}
-<section class="auth-card card">
-  <div class="brand-mark">SL</div>
-  <h1>Create student account</h1>
-  <p class="muted">Book washing machines without queueing at the laundry room.</p>
-  <form id="register-form" novalidate>
-    <label>Full name<input id="name" type="text" minlength="2" required></label>
-    <label>Email<input id="email" type="email" required></label>
-    <label>Password<input id="password" type="password" minlength="8" required></label>
-    <button class="btn btn-primary full" id="register-button" data-testid="register-button" type="submit">Create account</button>
-  </form>
-  <p class="auth-link">Already registered? <a href="{{ url_for('login_page') }}">Sign in</a></p>
-</section>
+
+{% block title %}
+Register · Smart Hostel Laundry
 {% endblock %}
-{% block scripts %}<script>
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const payload = {name: document.getElementById('name').value.trim(), email: document.getElementById('email').value.trim(), password: document.getElementById('password').value};
-  if (payload.name.length < 2 || !payload.email || payload.password.length < 8) return showToast('Complete all fields correctly.', 'error');
-  const result = await api('/api/register', {method:'POST', body:JSON.stringify(payload)});
-  if (result.success) { showToast('Registration successful. Please sign in.'); setTimeout(() => location.href='/login', 700); }
-});
-</script>{% endblock %}
+
+{% block content %}
+
+<section class="auth-card card">
+
+    <div class="brand-mark">
+        SL
+    </div>
+
+    <h1>
+        Create student account
+    </h1>
+
+    <p class="muted">
+        Book washing machines without queueing at the laundry room.
+    </p>
+
+
+    <form
+        id="register-form"
+        novalidate>
+
+
+        <!-- FULL NAME -->
+
+        <label for="name">
+
+            Full name
+
+            <input
+                id="name"
+                name="name"
+                type="text"
+                minlength="2"
+                required
+                autocomplete="name"
+                placeholder="Enter your full name">
+
+        </label>
+
+
+        <!-- EMAIL -->
+
+        <label for="email">
+
+            Email
+
+            <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autocomplete="email"
+                placeholder="example@gmail.com">
+
+        </label>
+
+
+        <!-- PASSWORD -->
+
+        <label for="password">
+
+            Password
+
+            <input
+                id="password"
+                name="password"
+                type="password"
+                minlength="8"
+                required
+                autocomplete="new-password"
+                placeholder="Minimum 8 characters">
+
+        </label>
+
+
+        <small>
+            Password must contain at least 8 characters,
+            1 letter and 1 number.
+        </small>
+
+
+        <!-- PASSWORD REQUIREMENTS -->
+
+        <div
+            id="password-requirements"
+            class="info-box"
+            style="margin-top: 12px; margin-bottom: 18px;">
+
+            <div id="password-length">
+                ❌ At least 8 characters
+            </div>
+
+            <div id="password-letter">
+                ❌ At least 1 letter
+            </div>
+
+            <div id="password-number">
+                ❌ At least 1 number
+            </div>
+
+        </div>
+
+
+        <!-- SUBMIT -->
+
+        <button
+            class="btn btn-primary full"
+            id="register-button"
+            data-testid="register-button"
+            type="submit">
+
+            Create account
+
+        </button>
+
+    </form>
+
+
+    <p class="auth-link">
+
+        Already registered?
+
+        <a href="{{ url_for('login_page') }}">
+            Sign in
+        </a>
+
+    </p>
+
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+const registerForm =
+    document.getElementById('register-form');
+
+const passwordInput =
+    document.getElementById('password');
+
+const passwordLength =
+    document.getElementById('password-length');
+
+const passwordLetter =
+    document.getElementById('password-letter');
+
+const passwordNumber =
+    document.getElementById('password-number');
+
+
+/*
+==================================================
+PASSWORD REQUIREMENT CHECK
+==================================================
+*/
+
+function validatePassword(password) {
+
+    const hasLength =
+        password.length >= 8;
+
+    const hasLetter =
+        /[A-Za-z]/.test(password);
+
+    const hasNumber =
+    /\d/.test(password);
+
+    passwordLength.textContent =
+        (hasLength ? '✅' : '❌') +
+        ' At least 8 characters';
+
+
+    passwordLetter.textContent =
+        (hasLetter ? '✅' : '❌') +
+        ' At least 1 letter';
+
+
+    passwordNumber.textContent =
+        (hasNumber ? '✅' : '❌') +
+        ' At least 1 number';
+
+
+    return (
+        hasLength &&
+        hasLetter &&
+        hasNumber
+    );
+}
+
+
+/*
+==================================================
+LIVE PASSWORD VALIDATION
+==================================================
+*/
+
+passwordInput.addEventListener(
+    'input',
+    function () {
+
+        validatePassword(
+            passwordInput.value
+        );
+
+    }
+);
+
+
+/*
+==================================================
+REGISTRATION
+==================================================
+*/
+
+registerForm.addEventListener(
+    'submit',
+    async function (e) {
+
+        e.preventDefault();
+
+
+        const name =
+            document
+                .getElementById('name')
+                .value
+                .trim();
+
+
+        const email =
+            document
+                .getElementById('email')
+                .value
+                .trim();
+
+
+        const password =
+            passwordInput.value;
+
+
+        /*
+        ------------------------------------------
+        BASIC VALIDATION
+        ------------------------------------------
+        */
+
+        if (name.length < 2) {
+
+            showToast(
+                'Full name must be at least 2 characters.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        if (!email) {
+
+            showToast(
+                'Please enter a valid email address.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        /*
+        ------------------------------------------
+        PASSWORD VALIDATION
+        ------------------------------------------
+        */
+
+        if (!validatePassword(password)) {
+
+            showToast(
+                'Password must contain at least 8 characters, 1 letter and 1 number.',
+                'error'
+            );
+
+            return;
+        }
+
+
+        /*
+        ------------------------------------------
+        CREATE PAYLOAD
+        ------------------------------------------
+        */
+
+        const payload = {
+
+            name: name,
+
+            email: email,
+
+            password: password
+
+        };
+
+
+        /*
+        ------------------------------------------
+        SEND TO BACKEND
+        ------------------------------------------
+        */
+
+        try {
+
+            const result =
+                await api(
+                    '/api/register',
+                    {
+                        method: 'POST',
+
+                        body: JSON.stringify(
+                            payload
+                        )
+                    }
+                );
+
+
+            if (result.success) {
+
+                showToast(
+                    'Registration successful. Please sign in.',
+                    'success'
+                );
+
+
+                setTimeout(
+                    function () {
+
+                        location.href =
+                            '/login';
+
+                    },
+                    700
+                );
+
+
+                return;
+            }
+
+
+            showToast(
+                result.message ||
+                'Registration failed.',
+                'error'
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+                'Registration error:',
+                error
+            );
+
+
+            showToast(
+                'Unable to register. Please try again.',
+                'error'
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

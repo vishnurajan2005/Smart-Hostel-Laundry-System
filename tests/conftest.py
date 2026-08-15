@@ -72,7 +72,9 @@ def client(test_app):
 
 
 @pytest.fixture()
-def student_client(client):
+def student_client(test_app):
+    client = test_app.test_client()
+
     response = client.post(
         "/api/login",
         json={
@@ -87,7 +89,9 @@ def student_client(client):
 
 
 @pytest.fixture()
-def admin_client(client):
+def admin_client(test_app):
+    client = test_app.test_client()
+
     response = client.post(
         "/api/login",
         json={
