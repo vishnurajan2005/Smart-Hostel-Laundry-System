@@ -1,1 +1,0 @@
-[text](../../../../../Desktop/Tactive/Architecture_Design_User_Guide.md)
